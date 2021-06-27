@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import os
 
 from app.image import ImageFile, ImageFiles, UnsupportedImageFormatError
-from app.location import Location, World
+from app.location import InvalidLocationError, Location, World
 
 API_KEY = "SV6kWr3TZFpCnj0_kFDsYCmeBxiCSDY5WsZp4WPtUsE"
 
@@ -24,6 +24,8 @@ def main() -> None:
             location = world.locate(coordinates)
             located_images[location.city].append(LocatedImage(image_file, location))
         except UnsupportedImageFormatError:
+            problematic_images.append(image_file.name)
+        except InvalidLocationError:
             problematic_images.append(image_file.name)
 
     print(f"There were {len(problematic_images)} problematic images.")

@@ -5,13 +5,22 @@ import requests
 from app.image import Coordinates
 
 
+class InvalidLocationError(Exception):
+    pass
+
+
 @dataclass
 class Location:
     data: dict
 
     @property
     def city(self) -> str:
-        return self.data["items"][0]["address"]["city"]
+        try:
+            return self.data["items"][0]["address"]["city"]
+        except KeyError as e:
+            raise InvalidLocationError from e
+        except IndexError as e:
+            raise InvalidLocationError from e
 
     def __repr__(self) -> str:
         return self.city
