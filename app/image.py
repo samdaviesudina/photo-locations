@@ -84,10 +84,20 @@ class ImageFile:
 
 @dataclass
 class ImageFiles:
+    EXTENSIONS_TO_AVOID = [".MOV", ".mov", ".mp4", ".MP4"]
+
     images_directory: str
 
     def get(self) -> List[ImageFile]:
         return [
             ImageFile(image, f"{self.images_directory}/{image}")
             for image in os.listdir(self.images_directory)
+            if not self._has_an_extension_to_avoid(image)
         ]
+
+    @classmethod
+    def _has_an_extension_to_avoid(cls, image_name: str) -> bool:
+        for extension_to_avoid in cls.EXTENSIONS_TO_AVOID:
+            if image_name.endswith(extension_to_avoid):
+                return True
+        return False
