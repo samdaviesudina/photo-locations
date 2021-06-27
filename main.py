@@ -18,18 +18,24 @@ def main() -> None:
 
     problematic_images = []
     located_images: defaultdict = defaultdict(list)
+    counter = 0
     for image_file in image_files:
         try:
             coordinates = image_file.get_coordinates()
             location = world.locate(coordinates)
             located_images[location.city].append(LocatedImage(image_file, location))
+            counter += 1
+            if counter % 100 == 0:
+                print(f"Have processed {counter}.")
         except UnsupportedImageFormatError:
             problematic_images.append(image_file.name)
         except InvalidLocationError:
             problematic_images.append(image_file.name)
 
+    print("Finished processing all the images.")
     print(f"There were {len(problematic_images)} problematic images.")
 
+    print("Organising images into folders...")
     for city in located_images.keys():
         city_snake_case = city.replace(" ", "_")
         os.mkdir(f"images/{city_snake_case}")
@@ -38,6 +44,8 @@ def main() -> None:
                 image.image_file.filepath,
                 f"images/{city_snake_case}/{image.image_file.name}",
             )
+
+    print("Done.")
 
 
 @dataclass
