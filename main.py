@@ -25,11 +25,6 @@ def main() -> None:
             located_images[location.city].append(LocatedImage(image_file, location))
         except UnsupportedImageFormatError:
             problematic_images.append(image_file.name)
-        except ValueError as e:
-            if str(e) == "No EXIF metadata found":
-                problematic_images.append(image_file.name)
-            else:
-                raise
 
     print(f"There were {len(problematic_images)} problematic images.")
 

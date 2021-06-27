@@ -63,13 +63,17 @@ class ImageFile:
         exif = self._get_exif()
 
         if not exif:
-            raise ValueError("No EXIF metadata found")
+            raise UnsupportedImageFormatError(
+                f"No EXIF metadata found in image {self.filepath}."
+            )
 
         geotags = {}
         for (idx, tag) in TAGS.items():
             if tag == "GPSInfo":
                 if idx not in exif:
-                    raise ValueError("No EXIF geotagging found")
+                    raise UnsupportedImageFormatError(
+                        f"No EXIF geotagging found in image {self.filepath}."
+                    )
 
                 for (key, val) in GPSTAGS.items():
                     if key in exif[idx]:
