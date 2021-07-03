@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import os
-from typing import List, Tuple
+import subprocess
+from typing import List, Optional, Tuple
 
 from PIL import Image, UnidentifiedImageError
 from PIL.ExifTags import GPSTAGS, TAGS
@@ -47,8 +48,34 @@ class ImageFile:
         return self.filepath
 
     def get_coordinates(self) -> Coordinates:
+        try:
+            return self._get_coordinates_via_exif()
+        except UnsupportedImageFormatError:
+            try:
+                return self._get_coordinates_straight_from_file()
+            except Exception as e:
+                message = f"Image {self.filepath} has an unsupported format."
+                raise UnsupportedImageFormatError(message) from e
+
+    def _get_coordinates_via_exif(self) -> Coordinates:
         geotags = self._get_geotags()
         return Coordinates.from_geotags(geotags)
+
+    def _get_coordinates_straight_from_file(self) -> Coordinates:
+        result = subprocess.run(
+            ["mdls", self.filepath], capture_output=True, encoding="utf8"
+        )
+        lines = result.stdout.split("\n")
+        latitude: Optional[float] = None
+        longitude: Optional[float] = None
+        for line in lines:
+            if line.startswith("kMDItemLongitude"):
+                longitude = float([bit.strip() for bit in line.split("=")][1])
+            if line.startswith("kMDItemLatitude"):
+                latitude = float([bit.strip() for bit in line.split("=")][1])
+        if not latitude or not longitude:
+            raise Exception("Could not find the right metadata.")
+        return Coordinates(latitude, longitude)
 
     def _get_exif(self) -> dict:
         try:
