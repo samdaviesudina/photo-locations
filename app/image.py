@@ -116,11 +116,14 @@ class ImageFiles:
     images_directory: str
 
     def get(self) -> List[ImageFile]:
-        return [
-            ImageFile(image, f"{self.images_directory}/{image}")
-            for image in os.listdir(self.images_directory)
-            if not self._has_an_extension_to_avoid(image)
-        ]
+        images = []
+        for image in os.listdir(self.images_directory):
+            full_path = f"{self.images_directory}/{image}"
+            is_a_directory = os.path.isdir(full_path)
+            has_an_extension_to_avoid = self._has_an_extension_to_avoid(image)
+            if not is_a_directory and not has_an_extension_to_avoid:
+                images.append(ImageFile(image, full_path))
+        return images
 
     @classmethod
     def _has_an_extension_to_avoid(cls, image_name: str) -> bool:
