@@ -111,9 +111,16 @@ class ImageFile:
 
 @dataclass
 class ImageFiles:
-    EXTENSIONS_TO_AVOID = [".MOV", ".mov", ".mp4", ".MP4"]
-
     images_directory: str
+    extensions_to_avoid: List[str]
+
+    def __init__(
+        self, images_directory: str, extensions_to_avoid: Optional[List[str]] = None
+    ) -> None:
+        self.images_directory = images_directory
+        if extensions_to_avoid is None:
+            extensions_to_avoid = []
+        self.extensions_to_avoid = extensions_to_avoid
 
     def get(self) -> List[ImageFile]:
         images = []
@@ -125,9 +132,8 @@ class ImageFiles:
                 images.append(ImageFile(image, full_path))
         return images
 
-    @classmethod
-    def _has_an_extension_to_avoid(cls, image_name: str) -> bool:
-        for extension_to_avoid in cls.EXTENSIONS_TO_AVOID:
+    def _has_an_extension_to_avoid(self, image_name: str) -> bool:
+        for extension_to_avoid in self.extensions_to_avoid:
             if image_name.endswith(extension_to_avoid):
                 return True
         return False
